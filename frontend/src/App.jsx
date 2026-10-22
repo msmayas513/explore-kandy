@@ -1,9 +1,20 @@
 
 import { useState } from 'react'
+import { attractions } from './data/attractions'
 import './App.css'
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  
+const [selectedCategory, setSelectedCategory] = useState('All')
+const [selectedAttraction, setSelectedAttraction] = useState(null)
+
+const filteredAttractions = attractions.filter(
+  (attraction) =>
+    selectedCategory === 'All' ||
+    attraction.category === selectedCategory
+)
+
 
   const navigation = [
     { label: 'Home', href: '#home' },
@@ -61,10 +72,114 @@ function App() {
         </a>
       </main>
 
-      <section id="attractions" className="placeholder-section">
-        <h2>Discover Amazing Places</h2>
-        <p>Tourist attractions are coming next.</p>
-      </section>
+      
+<section id="attractions" className="attractions-section">
+  <div className="section-heading">
+    <p className="section-eyebrow">EXPLORE DESTINATIONS</p>
+    <h2>Discover Amazing Places</h2>
+    <p>
+      Explore the natural beauty, religious heritage,
+      and historical attractions of Kandy.
+    </p>
+  </div>
+
+  <div className="category-filters">
+    {['All', 'Nature', 'Religious', 'Historical'].map(
+      (category) => (
+        <button
+          key={category}
+          className={
+            selectedCategory === category
+              ? 'filter-btn active'
+              : 'filter-btn'
+          }
+          onClick={() => setSelectedCategory(category)}
+        >
+          {category}
+        </button>
+      )
+    )}
+  </div>
+
+  <div className="attractions-grid">
+    {filteredAttractions.map((attraction) => (
+      <article className="attraction-card" key={attraction.id}>
+        <div className="attraction-image">
+          {attraction.image ? (
+            <img
+              src={attraction.image}
+              alt={attraction.name}
+            />
+          ) : (
+            <span>Photo coming soon</span>
+          )}
+        </div>
+
+        <div className="attraction-content">
+          <span className="attraction-category">
+            {attraction.category}
+          </span>
+
+          <h3>{attraction.name}</h3>
+
+          <p className="attraction-distance">
+            📍 {attraction.distance} KM
+          </p>
+
+          <p className="attraction-description">
+            {attraction.description}
+          </p>
+
+          <button
+            className="details-btn"
+            onClick={() => setSelectedAttraction(attraction)}
+          >
+            View Details →
+          </button>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {selectedAttraction && (
+    <div
+      className="modal-overlay"
+      onClick={() => setSelectedAttraction(null)}
+    >
+      <div
+        className="details-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attraction-modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          className="modal-close"
+          aria-label="Close details"
+          onClick={() => setSelectedAttraction(null)}
+        >
+          ✕
+        </button>
+
+        <span className="attraction-category">
+          {selectedAttraction.category}
+        </span>
+
+        <h2 id="attraction-modal-title">
+          {selectedAttraction.name}
+        </h2>
+
+        <p>
+          <strong>Distance:</strong>{' '}
+          {selectedAttraction.distance} KM
+        </p>
+
+        <p>{selectedAttraction.description}</p>
+      </div>
+    </div>
+  )}
+</section>
+
 
       <section id="map" className="placeholder-section">
         <h2>Explore the Map</h2>
