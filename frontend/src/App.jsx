@@ -14,6 +14,26 @@ const [selectedCategory, setSelectedCategory] = useState('All')
 const [selectedAttraction, setSelectedAttraction] = useState(null)
 const [tripPlan, setTripPlan] = useState([])
 
+const [adminUsername, setAdminUsername] = useState('')
+const [adminPassword, setAdminPassword] = useState('')
+const [adminToken, setAdminToken] = useState(null)
+const [loginError, setLoginError] = useState('')
+const [editingAttraction, setEditingAttraction] = useState(null)
+
+
+const [showAddForm, setShowAddForm] = useState(false)
+
+const [newAttraction, setNewAttraction] = useState({
+  name: '',
+  category: 'Nature',
+  distance: '',
+  description: '',
+  latitude: '',
+  longitude: ''
+})
+
+
+
 const visitDurations = {
   1: 90,
   2: 90,
@@ -26,6 +46,16 @@ const visitDurations = {
   9: 60,
   10: 60
 }
+
+const totalVisitMinutes = tripPlan.reduce(
+  (total, attraction) =>
+    total + (visitDurations[attraction.id] || 60),
+  0
+)
+
+const totalVisitHours = Math.floor(totalVisitMinutes / 60)
+const remainingVisitMinutes = totalVisitMinutes % 60
+
 
 
 const addToTrip = (attraction) => {
@@ -48,6 +78,187 @@ const removeFromTrip = (attractionId) => {
       (attraction) => attraction.id !== attractionId
     )
   )
+}
+
+const handleAdminLogin = async (event) => {
+  event.preventDefault()
+  setLoginError('')
+
+  try {
+    const response = await fetch('http://localhost:5000/api/admin/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: adminUsername,
+        password: adminPassword
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      setLoginError(data.message || 'Login failed')
+      return
+    }
+
+    setAdminToken(data.token)
+    setAdminPassword('')
+  } catch (error) {
+    console.error('Admin login error:', error)
+    setLoginError('Cannot connect to the server. Please try again.')
+  }
+}
+
+
+const handleSaveAttraction = async (event) => {
+  event.preventDefault()
+
+  if (!editingAttraction || !adminToken) return
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/admin/attractions/${editingAttraction.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({
+          name: editingAttraction.name,
+          category: editingAttraction.category,
+          distance: Number(editingAttraction.distance),
+          description: editingAttraction.description,
+          latitude: editingAttraction.latitude,
+          longitude: editingAttraction.longitude
+        })
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to update attraction')
+    }
+
+    setAttractions((currentAttractions) =>
+      currentAttractions.map((attraction) =>
+        attraction.id === editingAttraction.id
+          ? { ...editingAttraction }
+          : attraction
+      )
+    )
+
+    setEditingAttraction(null)
+    alert('Attraction updated successfully!')
+  } catch (error) {
+    console.error('Update error:', error)
+    alert('Failed to update attraction. Please try again.')
+  }
+}
+
+
+const handleDeleteAttraction = async (attraction) => {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${attraction.name}"?`
+  )
+
+  if (!confirmed) return
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/admin/attractions/${attraction.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to delete attraction')
+    }
+
+    setAttractions((currentAttractions) =>
+      currentAttractions.filter(
+        (item) => item.id !== attraction.id
+      )
+    )
+
+    setTripPlan((currentPlan) =>
+      currentPlan.filter(
+        (item) => item.id !== attraction.id
+      )
+    )
+
+    setEditingAttraction(null)
+    alert('Attraction deleted successfully!')
+  } catch (error) {
+    console.error('Delete error:', error)
+    alert('Failed to delete attraction. Please try again.')
+  }
+}
+    
+const handleAddAttraction = async (event) => {
+  event.preventDefault()
+
+  if (!adminToken) {
+    alert('Please log in as an administrator.')
+    return
+  }
+
+  try {
+    const response = await fetch(
+      'http://localhost:5000/api/admin/attractions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({
+          name: newAttraction.name.trim(),
+          category: newAttraction.category,
+          distance: Number(newAttraction.distance),
+          description: newAttraction.description,
+          latitude: Number(newAttraction.latitude),
+          longitude: Number(newAttraction.longitude)
+        })
+      }
+    )
+
+    if (!response.ok) {
+      const data = await response.json()
+      throw new Error(data.message || 'Failed to add attraction')
+    }
+
+    const attractionsResponse = await fetch(
+      'http://localhost:5000/api/attractions'
+    )
+
+    if (!attractionsResponse.ok) {
+      throw new Error('Attraction added, but refreshing the list failed')
+    }
+
+    const updatedAttractions = await attractionsResponse.json()
+    setAttractions(updatedAttractions)
+
+    setNewAttraction({
+      name: '',
+      category: 'Nature',
+      distance: '',
+      description: '',
+      latitude: '',
+      longitude: ''
+    })
+
+    setShowAddForm(false)
+    alert('Attraction added successfully!')
+  } catch (error) {
+    console.error('Add attraction error:', error)
+    alert(error.message)
+  }
 }
 
 
@@ -264,43 +475,382 @@ const filteredAttractions = attractions.filter(
 
 
       
-<section id="planner" className="placeholder-section">
-  <h2>Plan Your Day</h2>
-  <p>Select attractions to create your one-day itinerary.</p>
 
-  {tripPlan.length === 0 ? (
-    <p>No attractions selected yet. Add places from the attraction cards above.</p>
-  ) : (
-    <div className="trip-plan-list">
+
+<section id="planner" className="placeholder-section planner-section">
+  <div className="planner-layout">
+
+    {/* LEFT SIDE: Trip Summary */}
+    <div className="planner-summary">
+      <h2>Plan Your Day</h2>
+      <p>Select attractions to create your one-day itinerary.</p>
+
       <h3>Your Selected Attractions ({tripPlan.length})</h3>
 
-      {tripPlan.map((attraction, index) => (
-        <div className="trip-plan-item" key={attraction.id}>
+      {tripPlan.length > 0 && (
+        <div className="trip-time-summary">
           <p>
-            <strong>{index + 1}. {attraction.name}</strong>
+            <strong>⏱️ Estimated Total Visiting Time:</strong>{' '}
+            {totalVisitHours > 0 &&
+              `${totalVisitHours} hour${totalVisitHours !== 1 ? 's' : ''}`}
+            {totalVisitHours > 0 && remainingVisitMinutes > 0 && ' '}
+            {remainingVisitMinutes > 0 &&
+              `${remainingVisitMinutes} minutes`}
           </p>
           <p>
-            {attraction.category} · {Number(attraction.distance)} KM
+            <small>
+              Note: This estimate excludes travel time, meals, and waiting.
+            </small>
           </p>
-          
+        </div>
+      )}
+    </div>
+
+    {/* RIGHT SIDE: Selected Attractions */}
+    <div className="planner-attractions">
+      <h3>Attractions</h3>
+
+      {tripPlan.length === 0 ? (
+        <p>No attractions selected yet. Add places from the attraction cards above.</p>
+      ) : (
+        <div className="trip-plan-list">
+          {tripPlan.map((attraction, index) => (
+            <div className="trip-plan-item" key={attraction.id}>
+              <p>
+                <strong>{index + 1}. {attraction.name}</strong>
+              </p>
+              <p>
+                {attraction.category} · {Number(attraction.distance)} KM
+              </p>
+              <p>
+                ⏱️ Estimated Visit: {visitDurations[attraction.id] || 60} minutes
+              </p>
+              <button
+                className="details-btn"
+                onClick={() => removeFromTrip(attraction.id)}
+              >
+                Remove from Trip
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+  </div>
+</section>
+
+
+
+      
+
+<section id="admin" className="placeholder-section">
+  {adminToken ? (
+    <div className="admin-dashboard">
+      <h2>Administrator Dashboard</h2>
+      
+
 <button
+  type="button"
   className="details-btn"
-  onClick={() => removeFromTrip(attraction.id)}
+  onClick={() => setShowAddForm(!showAddForm)}
 >
-  Remove from Trip
+  {showAddForm ? 'Cancel Adding' : '+ Add New Attraction'}
 </button>
 
-        </div>
-      ))}
+
+{showAddForm && (
+  <div className="admin-add-form">
+    <h3>Add New Attraction</h3>
+    
+<form onSubmit={handleAddAttraction}>
+  <label htmlFor="new-name">Attraction Name</label>
+  <input
+    id="new-name"
+    type="text"
+    placeholder="Enter attraction name"
+    value={newAttraction.name}
+    onChange={(event) =>
+      setNewAttraction({
+        ...newAttraction,
+        name: event.target.value
+      })
+    }
+    required
+  />
+
+  <label htmlFor="new-category">Category</label>
+  <select
+    id="new-category"
+    value={newAttraction.category}
+    onChange={(event) =>
+      setNewAttraction({
+        ...newAttraction,
+        category: event.target.value
+      })
+    }
+  >
+    <option value="Nature">Nature</option>
+    <option value="Religious">Religious</option>
+    <option value="Historical">Historical</option>
+  </select>
+
+  
+<label htmlFor="new-distance">Distance (KM)</label>
+<input
+  id="new-distance"
+  type="number"
+  min="0"
+  max="999.9"
+  step="0.1"
+  placeholder="Enter distance in KM"
+  value={newAttraction.distance}
+  onChange={(event) =>
+    setNewAttraction({
+      ...newAttraction,
+      distance: event.target.value
+    })
+  }
+  required
+/>
+
+<label htmlFor="new-description">Description</label>
+<textarea
+  id="new-description"
+  rows="4"
+  placeholder="Enter attraction description"
+  value={newAttraction.description}
+  onChange={(event) =>
+    setNewAttraction({
+      ...newAttraction,
+      description: event.target.value
+    })
+  }
+/>
+
+    
+<label htmlFor="new-latitude">Latitude</label>
+<input
+  id="new-latitude"
+  type="number"
+  step="any"
+  min="-90"
+  max="90"
+  placeholder="Example: 7.2906"
+  value={newAttraction.latitude}
+  onChange={(event) =>
+    setNewAttraction({
+      ...newAttraction,
+      latitude: event.target.value
+    })
+  }
+  required
+/>
+
+<label htmlFor="new-longitude">Longitude</label>
+<input
+  id="new-longitude"
+  type="number"
+  step="any"
+  min="-180"
+  max="180"
+  placeholder="Example: 80.6337"
+  value={newAttraction.longitude}
+  onChange={(event) =>
+    setNewAttraction({
+      ...newAttraction,
+      longitude: event.target.value
+    })
+  }
+  required
+/>
+
+<button type="submit" className="details-btn">
+  Save New Attraction
+</button>
+
+
+</form>
+
+  </div>
+)}
+
+
+      
+<div className="admin-stats">
+  <h3>Total Attractions</h3>
+  <p>{attractions.length}</p>
+</div>
+
+<div className="admin-attractions">
+  <h3>Manage Attractions</h3>
+
+  <div className="admin-attractions-list">
+    {attractions.map((attraction) => (
+      
+<div className="admin-attraction-item" key={attraction.id}>
+  <div>
+    <h4>{attraction.name}</h4>
+    <p>{attraction.category}</p>
+  </div>
+
+  
+<div className="admin-attraction-actions">
+  <button
+    type="button"
+    className="details-btn"
+    onClick={() => setEditingAttraction(attraction)}
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    className="details-btn"
+    onClick={() => handleDeleteAttraction(attraction)}
+  >
+    Delete
+  </button>
+</div>
+
+</div>
+
+    ))}
+  </div>
+</div>
+
+      
+{editingAttraction && (
+  <div className="admin-edit-form">
+    <h3>Edit Attraction</h3>
+
+    <form onSubmit={handleSaveAttraction}>
+      <label htmlFor="edit-name">Attraction Name</label>
+      <input
+        id="edit-name"
+        type="text"
+        value={editingAttraction.name}
+        onChange={(event) =>
+          setEditingAttraction({
+            ...editingAttraction,
+            name: event.target.value
+          })
+        }
+      />
+
+      <label htmlFor="edit-category">Category</label>
+      <select
+        id="edit-category"
+        value={editingAttraction.category}
+        onChange={(event) =>
+          setEditingAttraction({
+            ...editingAttraction,
+            category: event.target.value
+          })
+        }
+      >
+        <option value="Nature">Nature</option>
+        <option value="Religious">Religious</option>
+        <option value="Historical">Historical</option>
+      </select>
+
+        
+<label htmlFor="edit-distance">Distance (KM)</label>
+<input
+  id="edit-distance"
+  type="number"
+  min="0"
+  max="999.9"
+  step="0.1"
+  value={editingAttraction.distance ?? ''}
+  onChange={(event) =>
+    setEditingAttraction({
+      ...editingAttraction,
+      distance: event.target.value
+    })
+  }
+  required
+/>
+      
+<label htmlFor="edit-description">Description</label>
+<textarea
+  id="edit-description"
+  rows="4"
+  value={editingAttraction.description ?? ''}
+  onChange={(event) =>
+    setEditingAttraction({
+      ...editingAttraction,
+      description: event.target.value
+    })
+  }
+/>
+      <button type="submit" className="details-btn">
+  Save Changes
+</button>
+
+      <button type="button" onClick={() => setEditingAttraction(null)}>
+        Cancel
+      </button>
+    </form>
+  </div>
+)}
+
+      <p>✅ Login successful! Welcome, {adminUsername}.</p>
+      <p>You are now signed in to Explore Kandy.</p>
+
+      <button
+        className="details-btn"
+        onClick={() => {
+          setAdminToken(null)
+          setAdminPassword('')
+          setLoginError('')
+        }}
+      >
+        Logout
+      </button>
     </div>
+  ) : (
+    <>
+      <h2>Administrator Login</h2>
+      <p>Sign in to manage Explore Kandy attractions.</p>
+
+      <form
+        className="admin-login-form"
+        onSubmit={handleAdminLogin}
+      >
+        <label htmlFor="admin-username">Username</label>
+        <input
+          id="admin-username"
+          type="text"
+          placeholder="Enter username"
+          value={adminUsername}
+          onChange={(event) => setAdminUsername(event.target.value)}
+          autoComplete="username"
+          required
+        />
+
+        <label htmlFor="admin-password">Password</label>
+        <input
+          id="admin-password"
+          type="password"
+          placeholder="Enter password"
+          value={adminPassword}
+          onChange={(event) => setAdminPassword(event.target.value)}
+          autoComplete="current-password"
+          required
+        />
+
+        {loginError && <p role="alert">{loginError}</p>}
+
+        <button type="submit" className="details-btn">
+          Login
+        </button>
+      </form>
+    </>
   )}
 </section>
 
 
-      <section id="admin" className="placeholder-section">
-        <h2>Administrator Login</h2>
-        <p>Secure administrator access will be added later.</p>
-      </section>
     </div>
   )
 }

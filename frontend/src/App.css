@@ -393,3 +393,173 @@
   flex-grow: 1;
 }
 
+
+/* Day Planner Styling */
+
+.trip-plan-list {
+  max-width: 650px;
+  margin: 25px auto;
+  text-align: left;
+}
+
+.trip-plan-list h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.trip-time-summary {
+  background: #eaf4ee;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.trip-time-summary p {
+  margin: 5px 0;
+}
+
+.trip-plan-item {
+  background: #ffffff;
+  border: 1px solid #e0e8e3;
+  border-left: 4px solid #174c3c;
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.trip-plan-item p {
+  margin: 6px 0;
+}
+
+.trip-plan-item .details-btn {
+  margin-top: 10px;
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+
+/* Two-column Day Planner layout */
+
+.planner-section {
+  padding: 50px 30px;
+}
+
+.planner-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 35px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.planner-summary {
+  background: #f3f8f5;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.planner-summary h2 {
+  margin-bottom: 15px;
+}
+
+.planner-summary h3 {
+  margin-top: 25px;
+  margin-bottom: 15px;
+}
+
+.planner-summary .trip-time-summary {
+  margin-bottom: 0;
+}
+
+.planner-attractions {
+  text-align: left;
+}
+
+.planner-attractions h3 {
+  margin-bottom: 15px;
+}
+
+.planner-attractions .trip-plan-list {
+  max-width: none;
+  margin: 0;
+}
+
+/* Responsive layout for mobile screens */
+
+@media (max-width: 768px) {
+  .planner-section {
+    padding: 30px 15px;
+  }
+
+  .planner-layout {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .planner-summary {
+    padding: 20px;
+  }
+}
+
+/* Scrollable Day Planner attraction list */
+
+@media (min-width: 769px) {
+  .planner-attractions .trip-plan-list {
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+}
+
+
+/* Administrator Login Form */
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  width: 100%;
+  margin: 25px auto 0;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #e0e8e3;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.admin-login-form label {
+  font-weight: 600;
+  color: #173f34;
+  margin-top: 5px;
+}
+
+.admin-login-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5d0;
+  border-radius: 7px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.admin-login-form input:focus {
+  outline: none;
+  border-color: #176047;
+  box-shadow: 0 0 0 3px rgba(23, 96, 71, 0.12);
+}
+
+.admin-login-form .details-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  font-size: 15px;
+  cursor: pointer;
+}
