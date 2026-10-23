@@ -563,3 +563,206 @@
   font-size: 15px;
   cursor: pointer;
 }
+
+
+/* Adjust Hanthana Bird Park photo */
+.attraction-image img[src*="hanthana-bird-park"] {
+  object-fit: cover;
+  object-position: center 100%;
+}
+
+
+/* Administrator dashboard header */
+.admin-dashboard-header {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.admin-dashboard-label {
+  color: #3b8060;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.admin-dashboard-header h2 {
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+
+.admin-dashboard-header p:last-child {
+  color: #66756d;
+  font-size: 14px;
+  margin: 0;
+}
+
+
+/* Admin dashboard layout */
+.admin-dashboard {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.admin-dashboard > h2 {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.admin-stats {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin: 24px 0;
+}
+
+.admin-attractions {
+  margin-top: 24px;
+}
+
+.admin-attractions-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-attraction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8e3;
+  border-radius: 12px;
+}
+
+.admin-attraction-item h4 {
+  margin: 0 0 5px;
+}
+
+.admin-attraction-item p {
+  margin: 0;
+  color: #66756d;
+}
+
+.admin-attraction-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-attraction-actions .details-btn {
+  padding: 10px 16px;
+}
+
+@media (max-width: 600px) {
+  .admin-attraction-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-attraction-actions {
+    width: 100%;
+  }
+}
+
+
+/* Dashboard attraction counter */
+.admin-stats h3 {
+  font-size: 14px;
+  color: #66756d;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.admin-stats p {
+  font-size: 36px;
+  font-weight: 700;
+  color: #123d32;
+  margin: 0;
+  line-height: 1.1;
+}
+
+
+/* Admin Add and Edit forms */
+.admin-add-form,
+.admin-edit-form {
+  background: #ffffff;
+  border: 1px solid #e2e8e3;
+  border-radius: 14px;
+  padding: 24px;
+  margin: 24px 0;
+  max-width: 650px;
+}
+
+.admin-add-form h3,
+.admin-edit-form h3 {
+  margin: 0 0 20px;
+  color: #123d32;
+}
+
+.admin-add-form form,
+.admin-edit-form form {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+.admin-add-form label,
+.admin-edit-form label {
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.admin-add-form input,
+.admin-add-form select,
+.admin-add-form textarea,
+.admin-edit-form input,
+.admin-edit-form select,
+.admin-edit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d6dfd8;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.admin-add-form textarea,
+.admin-edit-form textarea {
+  resize: vertical;
+}
+
+.admin-add-form .details-btn,
+.admin-edit-form .details-btn {
+  justify-self: start;
+  margin-top: 12px;
+}
+
+
+/* Admin dashboard footer */
+.admin-footer {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #d6dfd8;
+}
+
+.admin-footer p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #66756d;
+}
+
+
+/* Highlight the active navigation section */
+.nav-links a.nav-active {
+  color: #ffffff;
+  background-color: #164b3b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+}

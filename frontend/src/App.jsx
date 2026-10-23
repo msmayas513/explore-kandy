@@ -7,6 +7,8 @@ import KandyMap from './KandyMap'
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
+
   const [attractions, setAttractions] = useState([])
 
   
@@ -16,7 +18,11 @@ const [tripPlan, setTripPlan] = useState([])
 
 const [adminUsername, setAdminUsername] = useState('')
 const [adminPassword, setAdminPassword] = useState('')
-const [adminToken, setAdminToken] = useState(null)
+
+const [adminToken, setAdminToken] = useState(
+  () => sessionStorage.getItem("adminToken")
+)
+
 const [loginError, setLoginError] = useState('')
 const [editingAttraction, setEditingAttraction] = useState(null)
 
@@ -102,7 +108,7 @@ const handleAdminLogin = async (event) => {
       setLoginError(data.message || 'Login failed')
       return
     }
-
+    sessionStorage.setItem("adminToken", data.token)
     setAdminToken(data.token)
     setAdminPassword('')
   } catch (error) {
@@ -279,6 +285,32 @@ useEffect(() => {
 }, [])
 
 
+useEffect(() => {
+  const sectionIds = ['home', 'attractions', 'map', 'planner', 'admin']
+
+  const updateActiveSection = () => {
+    const scrollPosition = window.scrollY + 180
+    let currentSection = 'home'
+
+    sectionIds.forEach((id) => {
+      const section = document.getElementById(id)
+
+      if (section && section.offsetTop <= scrollPosition) {
+        currentSection = id
+      }
+    })
+
+    setActiveSection(currentSection)
+  }
+
+  window.addEventListener('scroll', updateActiveSection, { passive: true })
+  updateActiveSection()
+
+  return () => {
+    window.removeEventListener('scroll', updateActiveSection)
+  }
+}, [])
+
 const filteredAttractions = attractions.filter(
   (attraction) =>
     selectedCategory === 'All' ||
@@ -313,13 +345,20 @@ const filteredAttractions = attractions.filter(
 
         <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
           {navigation.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-            >
-              {item.label}
-            </a>
+            
+<a
+  key={item.label}
+  href={item.href}
+  className={
+    activeSection === item.href.slice(1)
+      ? 'nav-active'
+      : ''
+  }
+  onClick={() => setMenuOpen(false)}
+>
+  {item.label}
+</a>
+
           ))}
         </nav>
       </header>
@@ -374,16 +413,40 @@ const filteredAttractions = attractions.filter(
   <div className="attractions-grid">
     {filteredAttractions.map((attraction) => (
       <article className="attraction-card" key={attraction.id}>
-        <div className="attraction-image">
-          {attraction.image ? (
-            <img
-              src={attraction.image}
-              alt={attraction.name}
-            />
-          ) : (
-            <span>Photo coming soon</span>
-          )}
-        </div>
+       
+<div className="attraction-image">
+  {({
+    1: "sri-dalada-maligawa-1.jpg",
+    2: "dunumadalawa.jpg",
+    3: "hanthana-bird-park.jpg",
+    4: "ceylon-tea-museum.jpg",
+    5: "sembuwatta-lake.jpg",
+    6: "kalabokka-360.jpg",
+    7: "hunasgiriya-waterfall.jpg",
+    8: "nelligala.jpg",
+    9: "embekka-dewalaya.jpg",
+    10: "gadaladeniya.jpg",
+  })[attraction.id] ? (
+    <img
+      src={`/images/attractions/${({
+        1: "sri-dalada-maligawa-1.jpg",
+        2: "dunumadalawa.jpg",
+        3: "hanthana-bird-park.jpg",
+        4: "ceylon-tea-museum.jpg",
+        5: "sembuwatta-lake.jpg",
+        6: "kalabokka-360.jpg",
+        7: "hunasgiriya-waterfall.jpg",
+        8: "nelligala.jpg",
+        9: "embekka-dewalaya.jpg",
+        10: "gadaladeniya.jpg",
+      })[attraction.id]}`}
+      alt={attraction.name}
+    />
+  ) : (
+    <span>Photo coming soon</span>
+  )}
+</div>
+
 
         <div className="attraction-content">
           <span className="attraction-category">
@@ -450,6 +513,33 @@ const filteredAttractions = attractions.filter(
         <h2 id="attraction-modal-title">
           {selectedAttraction.name}
         </h2>
+
+        
+{selectedAttraction.id >= 1 && selectedAttraction.id <= 10 && (
+  <img
+    src={`/images/attractions/${({
+      1: "sri-dalada-maligawa-1.jpg",
+      2: "dunumadalawa.jpg",
+      3: "hanthana-bird-park.jpg",
+      4: "ceylon-tea-museum.jpg",
+      5: "sembuwatta-lake.jpg",
+      6: "kalabokka-360.jpg",
+      7: "hunasgiriya-waterfall.jpg",
+      8: "nelligala.jpg",
+      9: "embekka-dewalaya.jpg",
+      10: "gadaladeniya.jpg",
+    })[selectedAttraction.id]}`}
+    alt={selectedAttraction.name}
+    style={{
+      width: "100%",
+      maxHeight: "260px",
+      objectFit: "cover",
+      borderRadius: "12px",
+      margin: "12px 0",
+    }}
+  />
+)}
+
 
         
 <p>
@@ -547,7 +637,15 @@ const filteredAttractions = attractions.filter(
 <section id="admin" className="placeholder-section">
   {adminToken ? (
     <div className="admin-dashboard">
-      <h2>Administrator Dashboard</h2>
+      
+<div className="admin-dashboard-header">
+  <div>
+    <p className="admin-dashboard-label">ADMIN CONTROL PANEL</p>
+    <h2>Manage Attractions</h2>
+    <p>Keep Explore Kandy's attraction information up to date.</p>
+  </div>
+</div>
+
       
 
 <button
@@ -796,11 +894,19 @@ const filteredAttractions = attractions.filter(
 )}
 
       <p>✅ Login successful! Welcome, {adminUsername}.</p>
+
       <p>You are now signed in to Explore Kandy.</p>
+
+      
+<div className="admin-footer">
+  <p>Explore Kandy Administration</p>
+</div>
+
 
       <button
         className="details-btn"
         onClick={() => {
+          sessionStorage.removeItem("adminToken")
           setAdminToken(null)
           setAdminPassword('')
           setLoginError('')
