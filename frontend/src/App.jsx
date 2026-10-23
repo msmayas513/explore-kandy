@@ -1,13 +1,72 @@
 
-import { useState } from 'react'
-import { attractions } from './data/attractions'
+
+import { useState, useEffect } from 'react'
 import './App.css'
+import KandyMap from './KandyMap'
+
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [attractions, setAttractions] = useState([])
+
   
 const [selectedCategory, setSelectedCategory] = useState('All')
 const [selectedAttraction, setSelectedAttraction] = useState(null)
+const [tripPlan, setTripPlan] = useState([])
+
+const visitDurations = {
+  1: 90,
+  2: 90,
+  3: 120,
+  4: 90,
+  5: 120,
+  6: 60,
+  7: 60,
+  8: 60,
+  9: 60,
+  10: 60
+}
+
+
+const addToTrip = (attraction) => {
+  setTripPlan((currentPlan) => {
+    const alreadyAdded = currentPlan.some(
+      (place) => place.id === attraction.id
+    )
+
+    if (alreadyAdded) {
+      return currentPlan
+    }
+
+    return [...currentPlan, attraction]
+  })
+}
+
+const removeFromTrip = (attractionId) => {
+  setTripPlan((currentPlan) =>
+    currentPlan.filter(
+      (attraction) => attraction.id !== attractionId
+    )
+  )
+}
+
+
+useEffect(() => {
+  fetch('http://localhost:5000/api/attractions')
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch attractions')
+      }
+      return response.json()
+    })
+    .then((data) => {
+      setAttractions(data)
+    })
+    .catch((error) => {
+      console.error('Error loading attractions:', error)
+    })
+}, [])
+
 
 const filteredAttractions = attractions.filter(
   (attraction) =>
@@ -123,8 +182,8 @@ const filteredAttractions = attractions.filter(
           <h3>{attraction.name}</h3>
 
           <p className="attraction-distance">
-            📍 {attraction.distance} KM
-          </p>
+  📍 {Number(attraction.distance)} KM
+</p>
 
           <p className="attraction-description">
             {attraction.description}
@@ -136,6 +195,18 @@ const filteredAttractions = attractions.filter(
           >
             View Details →
           </button>
+
+        
+<button
+  className="details-btn"
+  onClick={() => addToTrip(attraction)}
+  disabled={tripPlan.some((place) => place.id === attraction.id)}
+>
+  {tripPlan.some((place) => place.id === attraction.id)
+    ? '✓ Added to Trip'
+    : '+ Add to Trip'}
+</button>
+
         </div>
       </article>
     ))}
@@ -169,10 +240,12 @@ const filteredAttractions = attractions.filter(
           {selectedAttraction.name}
         </h2>
 
-        <p>
-          <strong>Distance:</strong>{' '}
-          {selectedAttraction.distance} KM
-        </p>
+        
+<p>
+  <strong>Distance:</strong>{' '}
+  {Number(selectedAttraction.distance)} KM
+</p>
+
 
         <p>{selectedAttraction.description}</p>
       </div>
@@ -181,15 +254,48 @@ const filteredAttractions = attractions.filter(
 </section>
 
 
-      <section id="map" className="placeholder-section">
-        <h2>Explore the Map</h2>
-        <p>Our interactive map will appear here.</p>
-      </section>
+      
+<section id="map" className="placeholder-section">
+  <h2>Explore the Map</h2>
+  <p>Discover attractions around Kandy on our interactive map.</p>
+  <KandyMap attractions={attractions} />
 
-      <section id="planner" className="placeholder-section">
-        <h2>Plan Your Day</h2>
-        <p>Create your perfect one-day itinerary.</p>
-      </section>
+</section>
+
+
+      
+<section id="planner" className="placeholder-section">
+  <h2>Plan Your Day</h2>
+  <p>Select attractions to create your one-day itinerary.</p>
+
+  {tripPlan.length === 0 ? (
+    <p>No attractions selected yet. Add places from the attraction cards above.</p>
+  ) : (
+    <div className="trip-plan-list">
+      <h3>Your Selected Attractions ({tripPlan.length})</h3>
+
+      {tripPlan.map((attraction, index) => (
+        <div className="trip-plan-item" key={attraction.id}>
+          <p>
+            <strong>{index + 1}. {attraction.name}</strong>
+          </p>
+          <p>
+            {attraction.category} · {Number(attraction.distance)} KM
+          </p>
+          
+<button
+  className="details-btn"
+  onClick={() => removeFromTrip(attraction.id)}
+>
+  Remove from Trip
+</button>
+
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+
 
       <section id="admin" className="placeholder-section">
         <h2>Administrator Login</h2>

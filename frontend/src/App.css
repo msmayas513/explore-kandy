@@ -15,7 +15,7 @@
   color: white;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .logo {
@@ -356,5 +356,40 @@
   .details-modal {
     padding: 25px;
   }
+}
+/* Keep Leaflet map below the navigation */
+.leaflet-container {
+  z-index: 0;
+}
+
+/* Spacing between attraction card buttons */
+.attraction-card .details-btn {
+  margin-right: 10px;
+  margin-bottom: 8px;
+}
+
+/* Disabled Add to Trip button */
+.attraction-card .details-btn:disabled {
+  background-color: #8ca69a;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Make all attraction cards equal-height layouts */
+.attraction-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Allow the card content to fill available space */
+.attraction-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Push the buttons toward the bottom */
+.attraction-description {
+  flex-grow: 1;
 }
 
