@@ -329,10 +329,26 @@ const filteredAttractions = attractions.filter(
   return (
     <div>
       <header className="navbar">
-        <a className="logo" href="#home">
-          <span className="logo-icon">✦</span>
-          Explore Kandy
-        </a>
+        
+<a className="logo" href="#home">
+  <span className="logo-icon">
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#E9C878"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m8 3 4 8 5-5 5 15H2L8 3Z" />
+    </svg>
+  </span>
+  Explore Kandy
+</a>
+
 
         <button
           className="menu-toggle"
